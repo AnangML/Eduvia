@@ -46,8 +46,10 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'school' => [
-                'name' => Setting::get('school_name', 'Eduvia'),
+                'name' => Setting::get('school_name', 'SMK Eduvia Nusantara'),
                 'level' => Setting::get('school_level', 'SMA/SMK'),
+                'tagline' => Setting::get('school_tagline', 'Maju Bersama, Berakhlak Mulia'),
+                'logo' => Setting::get('school_logo'),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

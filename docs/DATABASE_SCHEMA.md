@@ -102,9 +102,9 @@ Mencatat riwayat perubahan data krusial sistem.
   - `guardian_id` (FK), `student_id` (FK), `relationship` ('father', 'mother', 'guardian'), `is_emergency_contact` (BOOLEAN).
   - *Primary Key Composite:* `(guardian_id, student_id)`
 
-### 3.5 `student_classrooms` (Penempatan Siswa per Tahun Ajaran)
-- `id`, `student_id` (FK), `classroom_id` (FK), `academic_year_id` (FK), `status` ('active', 'transferred', 'passed'), `timestamps`.
-- *Composite Index & Unique:* `(student_id, academic_year_id)` (Satu siswa hanya ada di 1 kelas per tahun ajaran).
+### 3.5 `student_classrooms` (Penempatan & Mutasi Siswa per Tahun Ajaran)
+- `id`, `student_id` (FK), `classroom_id` (FK), `academic_year_id` (FK), `status` ('active', 'transferred', 'graduated'), `transferred_at` (TIMESTAMPTZ, Nullable), `notes` (TEXT, Nullable), `timestamps`.
+- *PostgreSQL Partial Unique Index:* `CREATE UNIQUE INDEX idx_unique_active_student_class ON student_classrooms (student_id, academic_year_id) WHERE status = 'active';` (memastikan hanya 1 kelas aktif per tahun ajaran, tetapi riwayat mutasi/pindah kelas tetap tercatat).
 
 ### 3.6 `subjects` & `teaching_assignments`
 - **`subjects`**:
@@ -115,7 +115,85 @@ Mencatat riwayat perubahan data krusial sistem.
 
 ---
 
-## 4. Skema Phase 4 — Rekap Absensi
+## 4. Skema Phase 2 — Profil Sekolah (Publik) & Admin CMS
+
+### 4.1 `posts` (Berita, Pengumuman, Prestasi, Agenda)
+- Menyimpan artikel publik dan informasi sekolah dengan optimasi SEO.
+- **Kolom:**
+  - `id`: BIGSERIAL (Primary Key)
+  - `author_id`: FK `users.id` ON DELETE SET NULL, Nullable
+  - `category`: VARCHAR(50) (values: `'news'`, `'announcement'`, `'achievement'`, `'agenda'`)
+  - `title`: VARCHAR(255)
+  - `slug`: VARCHAR(255) UNIQUE
+  - `excerpt`: TEXT, Nullable
+  - `content`: TEXT
+  - `featured_image`: VARCHAR(255), Nullable
+  - `status`: VARCHAR(20) DEFAULT `'draft'` (values: `'draft'`, `'published'`)
+  - `published_at`: TIMESTAMPTZ, Nullable
+  - `event_date`: TIMESTAMPTZ, Nullable (untuk kategori agenda)
+  - `views_count`: INT DEFAULT 0
+  - `timestamps`, `softDeletes`
+- **B-Tree Indexes:**
+  - `slug` (UNIQUE)
+  - `category`
+  - `status`
+  - `published_at`
+  - Composite Index: `(status, published_at)` (untuk feed query publik cepat)
+
+### 4.2 `facilities` (Fasilitas & Sarana Prasarana)
+- **Kolom:**
+  - `id`: BIGSERIAL (Primary Key)
+  - `name`: VARCHAR(255)
+  - `slug`: VARCHAR(255) UNIQUE
+  - `description`: TEXT, Nullable
+  - `image_path`: VARCHAR(255), Nullable
+  - `order`: INT DEFAULT 0
+  - `is_active`: BOOLEAN DEFAULT true
+  - `timestamps`
+- **B-Tree Indexes:** `order`, `is_active`
+
+### 4.3 `gallery_albums` & `galleries` (Dokumentasi Foto)
+- **`gallery_albums`**:
+  - `id`: BIGSERIAL (Primary Key)
+  - `title`: VARCHAR(255)
+  - `slug`: VARCHAR(255) UNIQUE
+  - `description`: TEXT, Nullable
+  - `cover_image`: VARCHAR(255), Nullable
+  - `order`: INT DEFAULT 0
+  - `is_active`: BOOLEAN DEFAULT true
+  - `timestamps`
+- **`galleries`**:
+  - `id`: BIGSERIAL (Primary Key)
+  - `album_id`: FK `gallery_albums.id` ON DELETE CASCADE, Nullable
+  - `title`: VARCHAR(255), Nullable
+  - `image_path`: VARCHAR(255)
+  - `caption`: TEXT, Nullable
+  - `order`: INT DEFAULT 0
+  - `timestamps`
+- **B-Tree Indexes:** `album_id`
+
+### 4.4 `contact_messages` (Pesan & Feedback Formulir Publik)
+- **Kolom:**
+  - `id`: BIGSERIAL (Primary Key)
+  - `name`: VARCHAR(255)
+  - `email`: VARCHAR(255)
+  - `phone`: VARCHAR(25), Nullable
+  - `subject`: VARCHAR(255)
+  - `message`: TEXT
+  - `is_read`: BOOLEAN DEFAULT false
+  - `read_at`: TIMESTAMPTZ, Nullable
+  - `timestamps`
+- **B-Tree Indexes:** `is_read`, `email`, `created_at`
+
+### 4.5 Modifikasi `teachers` (Direktori Publik)
+- Penambahan kolom:
+  - `is_public`: BOOLEAN DEFAULT false, Index
+  - `photo`: VARCHAR(255), Nullable
+  - `title_degree`: VARCHAR(100), Nullable
+
+---
+
+## 5. Skema Phase 4 — Rekap Absensi
 
 ### 4.1 `attendances` & `attendance_details`
 - **`attendances`**:
@@ -151,8 +229,8 @@ Mencatat riwayat perubahan data krusial sistem.
 
 ### 6.2 `payment_transactions` & `payment_receipts`
 - **`payment_transactions`**:
-  - `id`, `student_bill_id` (FK), `invoice_number` (VARCHAR(50), UNIQUE, Index), `amount` (BIGINT), `payment_method` ('cash', 'manual_transfer', 'midtrans'), `status` ('pending', 'settlement', 'expire', 'cancel', 'failed'), `paid_at` (TIMESTAMPTZ, Nullable), `snap_token` (VARCHAR(255), Nullable), `payment_payload` (JSONB), `payment_proof_url` (VARCHAR(255), Nullable), `verified_by` (FK `users.id`, Nullable), `timestamps`.
-  - *Composite Index:* `(invoice_number, status)`.
+  - `id`, `student_bill_id` (FK), `invoice_number` (VARCHAR(50), UNIQUE, Index), `idempotency_key` (VARCHAR(100), UNIQUE, Index — untuk anti double submit), `amount` (BIGINT), `payment_method` ('cash', 'manual_transfer', 'midtrans'), `status` ('pending', 'settlement', 'expire', 'cancel', 'failed'), `paid_at` (TIMESTAMPTZ, Nullable), `snap_token` (VARCHAR(255), Nullable), `payment_payload` (JSONB), `payment_proof_url` (VARCHAR(255), Nullable), `verified_by` (FK `users.id`, Nullable), `timestamps`.
+  - *Composite Index:* `(invoice_number, status)`, `(idempotency_key)`.
 
 ---
 

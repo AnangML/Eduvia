@@ -118,7 +118,36 @@ Setiap perubahan pada data sensitif (nilai, kehadiran, pembayaran, dan perubahan
 ```
 
 - **Keamanan Webhook:** Validasi hashing `SHA512(order_id + status_code + gross_amount + ServerKey)` sebelum mengubah status transaksi.
-- **Idempotency:** Request webhook ganda dengan `order_id` yang sama dan status sama tidak akan membuat catatan ganda atau memicu event berulang.
+- **Idempotency Webhook:** Request webhook ganda dengan `order_id` yang sama dan status sama tidak akan membuat catatan ganda atau memicu event berulang.
+
+### 5.1 Mekanisme Idempotensi Transaksi & Anti Double-Submit
+
+Untuk mencegah tagihan ganda atau pembuatan transaksi berulang akibat pengguna mengklik tombol bayar berkali-kali (*rage clicking* atau koneksi lambat):
+
+1. **Proteksi Frontend (UI):**
+   - Tombol bayar langsung berstatus `disabled` dan menampilkan ikon loading spinner segera setelah diklik pertama kali.
+   - Menggunakan state tracking pada komponen React (`isSubmitting = true`).
+2. **Idempotency Key (Backend):**
+   - Setiap inisiasi pembayaran menyertakan header/payload `X-Idempotency-Key` (UUID v4) atau digenerate otomatis berdasarkan `hash(student_bill_id + amount + date)`.
+   - Tabel `payment_transactions` memiliki kolom `idempotency_key` dengan constraint **UNIQUE**.
+3. **Atomic Lock (Laravel Cache):**
+   - Sebelum membuat transaksi di Midtrans, backend mengunci proses menggunakan atomic lock:
+     ```php
+     Cache::lock("bill_payment_{$billId}", 10)->block(5, function () use ($bill, $amount, $idempotencyKey) {
+         // Cek apakah transaksi dengan idempotency_key atau pending Snap token sudah ada
+         $existing = PaymentTransaction::where('idempotency_key', $idempotencyKey)
+             ->orWhere(fn ($q) => $q->where('student_bill_id', $bill->id)->where('status', 'pending'))
+             ->first();
+
+         if ($existing && $existing->snap_token) {
+             return $existing; // Kembalikan token yang sudah ada, jangan request baru ke Midtrans
+         }
+
+         // Request Snap Token baru ke Midtrans...
+     });
+     ```
+4. **Idempotensi Response:**
+   - Jika request berulang dengan `idempotency_key` yang sama masuk ke server, server langsung mengembalikan Snap token yang sudah dibuat sebelumnya tanpa membuat transaksi baru di Midtrans atau di database.
 
 ---
 

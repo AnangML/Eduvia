@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -26,6 +27,10 @@ class Setting extends Model
     public static function get(string $key, mixed $default = null): mixed
     {
         return Cache::remember("setting.{$key}", 3600, function () use ($key, $default) {
+            if (! Schema::hasTable('settings')) {
+                return $default;
+            }
+
             $setting = static::where('key', $key)->first();
 
             if (! $setting) {

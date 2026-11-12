@@ -27,7 +27,25 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'school_address',
-                'value' => 'Jl. Pendidikan Merdeka No. 45, Jakarta',
+                'value' => 'Jl. Pendidikan Merdeka No. 45, Kebayoran Baru, Jakarta Selatan',
+                'group' => 'general',
+                'type' => 'string',
+            ],
+            [
+                'key' => 'school_province',
+                'value' => 'DKI Jakarta',
+                'group' => 'general',
+                'type' => 'string',
+            ],
+            [
+                'key' => 'school_city',
+                'value' => 'Jakarta Selatan',
+                'group' => 'general',
+                'type' => 'string',
+            ],
+            [
+                'key' => 'school_district',
+                'value' => 'Kebayoran Baru',
                 'group' => 'general',
                 'type' => 'string',
             ],

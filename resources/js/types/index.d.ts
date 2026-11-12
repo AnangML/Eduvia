@@ -13,6 +13,8 @@ export interface User {
 export interface SchoolInfo {
     name: string;
     level: string;
+    tagline?: string;
+    logo?: string;
 }
 
 export type PageProps<

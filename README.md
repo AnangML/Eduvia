@@ -24,7 +24,8 @@ Dokumentasi lengkap dan single source of truth tersimpan di folder `docs/`:
 4. [Rancangan Skema Database PostgreSQL](docs/DATABASE_SCHEMA.md) — Detail tabel, tipe data, foreign keys, dan strategi indeks.
 5. [Matriks Peran & Hak Akses (RBAC)](docs/ROLES_PERMISSIONS.md) — Matriks izin untuk 8 peran pengguna.
 6. [Rencana Kerja Phase 0](docs/PHASE_0_PLAN.md) — Langkah teknis dan checklist Definition of Done (DoD) Phase 0.
-7. [Changelog](CHANGELOG.md) — Riwayat perubahan versi dan fitur.
+7. [Rencana Kerja Phase 1](docs/PHASE_1_PLAN.md) — Master Data Akademik, Guru, Siswa, Wali, & Penugasan Mengajar.
+8. [Changelog](CHANGELOG.md) — Riwayat perubahan versi dan fitur.
 
 ---
 

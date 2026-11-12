@@ -1,8 +1,11 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
 
 export default function Guest({ children }: PropsWithChildren) {
+    const pageProps = usePage().props as unknown as { school?: { name?: string } };
+    const schoolName = pageProps.school?.name || 'Sistem Sekolah';
+
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 p-4 sm:p-6">
             <div className="mb-6">
@@ -16,7 +19,7 @@ export default function Guest({ children }: PropsWithChildren) {
             </div>
 
             <div className="mt-8 text-center text-xs text-slate-500">
-                &copy; {new Date().getFullYear()} Eduvia. All rights reserved.
+                &copy; {new Date().getFullYear()} {schoolName}. Dilindungi hak cipta.
             </div>
         </div>
     );

@@ -2,20 +2,28 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import { Link, usePage } from '@inertiajs/react';
 import {
+    Award,
     BarChart3,
     BookOpen,
+    Building2,
     Calendar,
     ChevronDown,
     CreditCard,
     FileText,
+    Globe,
     GraduationCap,
     History,
+    Image,
     LayoutDashboard,
     LogOut,
+    Mail,
     Menu,
+    Newspaper,
+    School,
     Settings,
     Shield,
     UserCheck,
+    UserPlus,
     Users,
     X,
 } from 'lucide-react';
@@ -75,16 +83,37 @@ export default function Authenticated({
             {
                 group: 'Akademik & Siswa',
                 items: [
-                    { name: 'Master Akademik', href: '#', icon: Calendar },
-                    { name: 'Data Guru', href: '#', icon: Users },
-                    { name: 'Data Siswa & Kelas', href: '#', icon: GraduationCap },
-                    { name: 'Mata Pelajaran', href: '#', icon: BookOpen },
+                    { name: 'Tahun Ajaran & Semester', href: route('academic.years.index'), icon: Calendar },
+                    { name: 'Rombongan Belajar (Kelas)', href: route('academic.classrooms.index'), icon: GraduationCap },
+                    { name: 'Data Guru', href: route('academic.teachers.index'), icon: Users },
+                    { name: 'Data Siswa', href: route('academic.students.index'), icon: Users },
+                    { name: 'Mata Pelajaran', href: route('academic.subjects.index'), icon: BookOpen },
+                    { name: 'Penugasan Mengajar', href: route('academic.teaching-assignments.index'), icon: BookOpen },
+                ],
+            },
+            {
+                group: 'Website & Publik (CMS)',
+                items: [
+                    { name: 'Profil Sekolah', href: route('cms.school-profile.index'), icon: School },
+                    { name: 'Berita & Informasi', href: route('cms.posts.index'), icon: Newspaper },
+                    { name: 'Fasilitas Sekolah', href: route('cms.facilities.index'), icon: Building2 },
+                    { name: 'Galeri Foto', href: route('cms.galleries.index'), icon: Image },
+                    { name: 'Pesan Masuk', href: route('cms.messages.index'), icon: Mail },
+                ],
+            },
+            {
+                group: 'PPDB Online',
+                items: [
+                    { name: 'Dashboard PPDB', href: route('ppdb.dashboard'), icon: BarChart3 },
+                    { name: 'Gelombang & Jalur', href: route('ppdb.periods.index'), icon: Calendar },
+                    { name: 'Data Pendaftar', href: route('ppdb.applicants.index'), icon: UserPlus },
+                    { name: 'Seleksi Eliminasi', href: route('ppdb.selection.index'), icon: Award },
+                    { name: 'Daftar Ulang & Siswa', href: route('ppdb.re-registration.index'), icon: UserCheck },
                 ],
             },
             {
                 group: 'Administrasi',
                 items: [
-                    { name: 'PPDB Online', href: '#', icon: UserCheck },
                     { name: 'Keuangan & SSP', href: '#', icon: CreditCard },
                 ],
             }
@@ -147,31 +176,21 @@ export default function Authenticated({
 
             {/* Sidebar */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 ease-in-out ${
+                    sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 }`}
             >
                 {/* Logo Header */}
-                <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200/80">
-                    <Link href="/dashboard" className="flex items-center">
-                        <ApplicationLogo />
+                <div className="flex h-16 shrink-0 items-center justify-between px-5 border-b border-slate-200/80">
+                    <Link href="/dashboard" className="flex items-center min-w-0 flex-1 mr-2">
+                        <ApplicationLogo tagline="Portal Akademik" compact />
                     </Link>
                     <button
                         onClick={() => setSidebarOpen(false)}
-                        className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 lg:hidden"
+                        className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 lg:hidden shrink-0"
                     >
                         <X className="h-5 w-5" />
                     </button>
-                </div>
-
-                {/* School Name Badge */}
-                <div className="px-6 py-3 bg-slate-50/70 border-b border-slate-200/60">
-                    <div className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
-                        Institusi Aktif
-                    </div>
-                    <div className="text-xs font-semibold text-slate-800 truncate">
-                        {school?.name || 'SMK Eduvia Nusantara'}
-                    </div>
                 </div>
 
                 {/* Navigation Items */}
@@ -183,7 +202,12 @@ export default function Authenticated({
                             </h3>
                             <div className="mt-1 space-y-0.5">
                                 {section.items.map((item) => {
-                                    const isActive = item.href === route('dashboard');
+                                    const isActive = item.href !== '#' && (
+                                        typeof window !== 'undefined' && (
+                                            window.location.href === item.href ||
+                                            (item.href !== route('dashboard') && window.location.href.startsWith(item.href))
+                                        )
+                                    );
                                     const Icon = item.icon;
                                     return (
                                         <Link
@@ -210,7 +234,7 @@ export default function Authenticated({
                 </nav>
 
                 {/* Bottom User Profile */}
-                <div className="p-4 border-t border-slate-200/80 bg-slate-50/50">
+                <div className="shrink-0 p-4 border-t border-slate-200/80 bg-slate-50/50">
                     <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 font-bold text-sm">
                             {user.name.charAt(0).toUpperCase()}
@@ -228,7 +252,7 @@ export default function Authenticated({
             </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
                 {/* Topbar */}
                 <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/90 backdrop-blur px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4">

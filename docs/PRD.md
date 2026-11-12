@@ -40,6 +40,10 @@ Aplikasi sekolah terpadu yang menggabungkan: profil sekolah, PPDB, mata pelajara
 | Desain & UI | Clean & elegan, palet 60-30-10 (Putih-Slate 60%, Hitam/Navy 30%, Biru Royal 10%), font Plus Jakarta Sans/Inter, aturan ketat font-weight 400-700 (Light Mode only) |
 | Ikonografi | Lucide React (`lucide-react`) |
 | Metode Login | Fleksibel: Satu form input menerima Email ATAU NIP/NISN/Username |
+| Akun Otomatis Phase 1 | Password default: Siswa (`DDMMYYYY`/NISN), Guru (`NIP`), Wali (`No. HP`/aman) |
+| Relasi Wali Kelas | 1 Guru = Maksimal 1 Rombel per tahun ajaran aktif |
+| Penempatan Siswa | Mendukung mutasi/pindah kelas dengan status (`active`, `transferred`) |
+| Excel Processing | `maatwebsite/excel` (Laravel Excel) dengan validasi per baris |
 | Halaman Publik | Inertia React (single stack, ramah SEO dengan Inertia Head) |
 | Jenjang Fokus Awal | SMA/SMK (dengan dukungan jurusan & peminatan) |
 | Pendekatan | Dikerjakan bertahap per phase |
@@ -285,6 +289,7 @@ Jika ada ambiguitas, tanyakan dulu sebelum menulis kode.
 - Pembuatan tagihan massal per kelas/semester/bulan dan tagihan individu.
 - Diskon/keringanan per siswa (dengan alasan dan audit log).
 - **Payment Gateway Midtrans (Snap & Webhook Notification)**: pembayaran online otomatis (VA, QRIS, e-wallet).
+- **Idempotensi Pembayaran & Anti Double-Submit**: Penggunaan `idempotency_key` unik dan *atomic lock* pada backend, serta disabled state pada UI frontend untuk mencegah pembayaran ganda akibat klik berulang.
 - Pencatatan pembayaran **manual oleh admin/TU** (tunai/transfer langsung), termasuk cicilan/offline backup.
 - Unggah bukti transfer oleh wali dan verifikasi oleh admin (untuk opsi manual non-gateway).
 - Status tagihan: belum bayar, sebagian, lunas, kedaluwarsa, dibatalkan.
@@ -297,6 +302,7 @@ Jika ada ambiguitas, tanyakan dulu sebelum menulis kode.
 **Acceptance criteria**
 - Nominal disimpan sebagai integer rupiah; tidak ada pembulatan liar.
 - Pembayaran tidak bisa melebihi sisa tagihan.
+- Klik berulang pada proses bayar dicegah dengan idempotency key dan proteksi atomic lock; transaksi ganda untuk tagihan yang sama tidak dapat terjadi.
 - Webhook Midtrans diverifikasi menggunakan signature key untuk keamanan; status tagihan otomatis terupdate lunas/sebagian.
 - Setiap perubahan pembayaran tercatat di audit log; pembayaran yang salah dibatalkan lewat pembalikan, bukan dihapus.
 - Saldo tagihan = total tagihan − total pembayaran terverifikasi (diverifikasi test).
@@ -365,11 +371,11 @@ Jika ada ambiguitas, tanyakan dulu sebelum menulis kode.
 - [x] Identitas visual & UI: Tema clean & elegan, palet 60-30-10 (Putih/Slate 60%, Hitam/Navy 30%, Biru 10%), font Plus Jakarta Sans/Inter, aturan ketat font weight (400, 500, 600, 700), Light Mode only.
 - [x] Ikonografi: Lucide React
 - [x] Metode Login: Fleksibel (Email ATAU NIP/NISN/Username)
-- [x] Halaman Publik Phase 2: Inertia React (single stack)
+- [x] Halaman Publik Phase 2: Inertia React (single stack) dengan SEO meta tags.
+- [x] Konten Phase 2: Kategori (Berita, Pengumuman, Prestasi, Agenda), Album Galeri, Toggle Guru Publik, dan Form Kontak masuk ke Kotak Masuk Admin.
 - [x] Jenjang sekolah fokus awal: SMA/SMK (dengan jurusan/peminatan).
 - [ ] Apakah pengajuan izin/sakit oleh wali masuk MVP Phase 4?
 - [ ] Absensi harian saja atau per mata pelajaran?
-- [ ] Halaman publik Phase 2: Blade atau Inertia SSR?
 - [ ] Skema kenaikan kelas dan kelulusan: manual atau otomatis (backlog)?
 - [ ] Format/kop raport yang dipakai sekolah (butuh contoh PDF dari sekolah)?
 - [ ] Mobile: React Native atau Flutter?

@@ -21,7 +21,10 @@ class DatabaseSeeder extends Seeder
         // 2. Seed Default Settings
         $this->call(SettingSeeder::class);
 
-        // 3. Create Super Admin User
+        // 3. Seed Phase 1 Master Data
+        $this->call(AcademicMasterSeeder::class);
+
+        // 4. Create Super Admin User
         $superAdmin = User::firstOrCreate(
             ['email' => 'admin@eduvia.test'],
             [
@@ -35,5 +38,11 @@ class DatabaseSeeder extends Seeder
         );
 
         $superAdmin->assignRole('super_admin');
+
+        // 5. Seed Phase 2 School Profile & Public Content
+        $this->call(SchoolProfileSeeder::class);
+
+        // 6. Seed Phase 3 PPDB Online
+        $this->call(PpdbSeeder::class);
     }
 }
